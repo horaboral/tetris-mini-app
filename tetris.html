@@ -188,37 +188,41 @@
         const isTelegram = !!tg;
 
         if (tg) {
-            tg.ready();
-            tg.expand();
-            tg.setHeaderColor('#0a0a1a');
-            tg.setBackgroundColor('#0a0a1a');
+            try {
+                tg.ready();
+                tg.expand();
+                tg.setHeaderColor('#0a0a1a');
+                tg.setBackgroundColor('#0a0a1a');
 
-            // Enable MainButton (hidden initially)
-            tg.MainButton.setText('▶  PLAY')
-               .setColor('#1a1a2e')
-               .show();
+                // Enable MainButton (hidden initially)
+                tg.MainButton.setText('▶  PLAY')
+                   .setColor('#1a1a2e')
+                   .show();
 
-            tg.onEvent('mainButtonClicked', () => {
-                if (gameState === 'idle' || gameState === 'gameover') {
-                    startGame();
-                } else if (gameState === 'playing') {
-                    pauseGame();
-                } else if (gameState === 'paused') {
-                    resumeGame();
-                }
-            });
-
-            // Apply Telegram theme colors if available
-            applyTelegramTheme();
-
-            // BackButton: allow user to go back in Telegram
-            if (tg.BackButton) {
-                tg.BackButton.onClick(() => {
-                    if (gameState === 'playing') {
+                tg.onEvent('mainButtonClicked', () => {
+                    if (gameState === 'idle' || gameState === 'gameover') {
+                        startGame();
+                    } else if (gameState === 'playing') {
                         pauseGame();
+                    } else if (gameState === 'paused') {
+                        resumeGame();
                     }
-                    tg.close();
                 });
+
+                // Apply Telegram theme colors if available
+                applyTelegramTheme();
+
+                // BackButton: allow user to go back in Telegram
+                if (tg.BackButton) {
+                    tg.BackButton.onClick(() => {
+                        if (gameState === 'playing') {
+                            pauseGame();
+                        }
+                        tg.close();
+                    });
+                }
+            } catch(e) {
+                // Telegram WebApp init failed, continue without it
             }
         }
 
@@ -933,13 +937,18 @@
             }
         });
 
-        // === OVERLAY HANDLER ===
-        document.getElementById('overlay').addEventListener('click', () => {
+        // === OVERLAY HANDLER (pointerdown for unified touch/mouse) ===
+        const overlay = document.getElementById('overlay');
+        function overlayAction() {
             if (gameState === 'paused') {
                 resumeGame();
             } else if (gameState === 'idle' || gameState === 'gameover') {
                 startGame();
             }
+        }
+        overlay.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            overlayAction();
         });
 
         // === GAME OVER HANDLER ===
