@@ -6,7 +6,24 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Tetris</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js" async></script>
+    <script>
+    // Ensure Telegram WebApp is available even if external script fails
+    if (typeof Telegram === 'undefined') { window.Telegram = {}; }
+    if (!Telegram.WebApp) {
+        Telegram.WebApp = {
+            ready: function(){},
+            expand: function(){},
+            setHeaderColor: function(){},
+            setBackgroundColor: function(){},
+            MainButton: { setText: function(){return this;}, setColor: function(){return this;}, show: function(){}, hide: function(){} },
+            BackButton: { onClick: function(){}, show: function(){}, hide: function(){} },
+            onEvent: function(){},
+            HapticFeedback: { impactOccurred: function(){} },
+            themeParams: {}
+        };
+    }
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body {
