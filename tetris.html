@@ -256,6 +256,7 @@
         }
         function pauseGame() {
             gameState = 'paused';
+            if (hardDropTimer) { clearTimeout(hardDropTimer); hardDropTimer = null; }
             stopMusic();
             sfxPause();
             document.getElementById('overlay-text').textContent = 'PAUSED';
@@ -294,7 +295,6 @@
         const ROWS = 20;
         const CELL = 30;
         const NEXT_CELL = 20;
-        const HOLD_CELL = 20;
         const QUEUE_SIZE = 5;
 
         // Tetromino colors (standard guideline)
@@ -379,18 +379,11 @@
         nextCanvas.width = 5 * NEXT_CELL;
         nextCanvas.height = 4 * NEXT_CELL;
 
-        const holdCanvas = document.getElementById('hold-canvas');
-        const holdCtx = holdCanvas.getContext('2d');
-        holdCanvas.width = 5 * HOLD_CELL;
-        holdCanvas.height = 4 * HOLD_CELL;
-
         // === GAME STATE ===
         let board = [];
         let boardColors = [];
         let currentPiece = null;
         let nextQueue = [];
-        let holdPiece = null;
-        let canHold = true;
         let score = 0;
         let lines = 0;
         let level = 1;
@@ -455,8 +448,6 @@
             bag = [];
             nextQueue = [];
             for (let i = 0; i < QUEUE_SIZE; i++) nextQueue.push(nextPiece());
-            holdPiece = null;
-            canHold = true;
             score = 0;
             lines = 0;
             level = 1;
@@ -470,7 +461,6 @@
             const type = nextQueue.shift();
             nextQueue.push(nextPiece());
             currentPiece = spawnPiece(type);
-            canHold = true;
             lockDelay = 0;
             if (!valid(currentPiece)) {
                 gameState = 'gameover';
@@ -588,19 +578,7 @@
             }
         }
 
-        // === HOLD ===
-        function holdSwap() {
-            if (gameState !== 'playing' || !canHold) return;
-            canHold = false;
-            const type = currentPiece.type;
-            if (holdPiece !== null) {
-                currentPiece = spawnPiece(holdPiece);
-                holdPiece = type;
-            } else {
-                holdPiece = type;
-                spawnNext();
-            }
-        }
+        // === HOLD removed — replaced with hold-to-hard-drop ===
 
         // === UI UPDATE ===
         function updateUI() {
@@ -879,18 +857,6 @@
                 });
             }
 
-            // Hold
-            holdCtx.fillStyle = '#0d0d1a';
-            holdCtx.fillRect(0, 0, holdCanvas.width, holdCanvas.height);
-            if (holdPiece) {
-                const cells = SHAPES[holdPiece][0];
-                const ox = Math.floor((5 - cells.reduce((a, c) => Math.max(a, c[0]), 0) - 1) / 2);
-                const oy = Math.floor((4 - cells.reduce((a, c) => Math.max(a, c[1]), 0) - 1) / 2);
-                cells.forEach(([cx, cy]) => {
-                    const col = canHold ? COLORS[holdPiece] : 'rgba(100,100,100,0.4)';
-                    drawCell(holdCtx, cx + ox, cy + oy, col, HOLD_CELL);
-                });
-            }
         }
 
         // === GAME LOOP ===
@@ -951,7 +917,6 @@
                 case 'ArrowUp': rotate(1); e.preventDefault(); break;
                 case 'z': case 'Z': rotate(-1); break;
                 case ' ': hardDrop(); e.preventDefault(); break;
-                case 'c': case 'C': case 'Shift': holdSwap(); e.preventDefault(); break;
             }
         });
 
@@ -999,6 +964,8 @@
         });
 
         // === TOUCH ZONES ON CANVAS ===
+        let hardDropTimer = null;
+        const HARD_DROP_DELAY = 1500; // ms
         canvas.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             if (gameState !== 'playing') return;
@@ -1016,6 +983,18 @@
                     softDrop();
                 }
             }
+            // Start hard-drop timer on any touch
+            if (hardDropTimer) clearTimeout(hardDropTimer);
+            hardDropTimer = setTimeout(() => {
+                hardDrop();
+                hardDropTimer = null;
+            }, HARD_DROP_DELAY);
+        });
+        canvas.addEventListener('pointerup', () => {
+            if (hardDropTimer) { clearTimeout(hardDropTimer); hardDropTimer = null; }
+        });
+        canvas.addEventListener('pointerleave', () => {
+            if (hardDropTimer) { clearTimeout(hardDropTimer); hardDropTimer = null; }
         });
 
         // === HI-SCORES (localStorage) ===
@@ -1047,6 +1026,7 @@
         spawnNext = function() {
             origSpawn();
             if (gameState === 'gameover') {
+                if (hardDropTimer) { clearTimeout(hardDropTimer); hardDropTimer = null; }
                 stopMusic();
                 sfxGameOver();
                 saveHiScore(score);
