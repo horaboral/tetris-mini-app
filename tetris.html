@@ -60,10 +60,11 @@
             border-radius: 6px;
             color: #ccc;
             font-family: 'Courier New', monospace;
-            font-size: 10px;
-            padding: 4px 10px;
+            font-size: 14px;
+            padding: 2px 6px;
             cursor: pointer;
             flex-shrink: 0;
+            line-height: 1;
         }
         .info-panel {
             background: #111122;
@@ -88,13 +89,13 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 2px;
-            padding: 0 10px;
+            gap: 1px;
+            padding: 0 4px;
         }
         .stat {
             display: flex;
             justify-content: space-between;
-            font-size: 11px;
+            font-size: 10px;
         }
         .stat span:first-child { color: #666; }
         .stat span:last-child { color: #fff; font-weight: bold; }
@@ -162,7 +163,7 @@
 <body>
     <div id="app">
         <div id="top-bar">
-            <button id="new-game-btn">NEW GAME</button>
+            <button id="new-game-btn">↻</button>
             <div class="info-panel" id="hold-panel">
                 <div class="label">HOLD</div>
                 <canvas id="hold-canvas"></canvas>
