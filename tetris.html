@@ -869,14 +869,15 @@
             // Next queue
             nextCtx.fillStyle = '#0d0d1a';
             nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
-            nextQueue.slice(0, QUEUE_SIZE).forEach((type, i) => {
-                const cells = SHAPES[type][0];
+            const nextType = nextQueue.length ? nextQueue[0] : null;
+            if (nextType) {
+                const cells = SHAPES[nextType][0];
                 const ox = Math.floor((5 - cells.reduce((a, c) => Math.max(a, c[0]), 0) - 1) / 2);
                 const oy = Math.floor((4 - cells.reduce((a, c) => Math.max(a, c[1]), 0) - 1) / 2);
                 cells.forEach(([cx, cy]) => {
-                    drawCell(nextCtx, cx + ox, cy + oy + i * 2, COLORS[type], NEXT_CELL);
+                    drawCell(nextCtx, cx + ox, cy + oy, COLORS[nextType], NEXT_CELL);
                 });
-            });
+            }
 
             // Hold
             holdCtx.fillStyle = '#0d0d1a';
