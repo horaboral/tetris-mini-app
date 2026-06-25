@@ -369,7 +369,15 @@
         // Speed table (ms per drop per level)
         const SPEEDS = [800,720,630,550,470,380,300,220,140,100,80,80,80,70,70,70,50,50,50,30];
 
-        // === CANVAS SETUP ===
+        // Dynamic tempo: scales with level so music + cosack speed up together
+        // Base tempo 0.22s/beat at level 1, scales with sqrt of speed ratio
+        function getTempo() {
+            const speedIdx = Math.min(level - 1, SPEEDS.length - 1);
+            const speedRatio = Math.sqrt(SPEEDS[speedIdx] / SPEEDS[0]);
+            return 0.22 * speedRatio;
+        }
+
+        // === CANVAS SETUP ==
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = COLS * CELL;
@@ -683,7 +691,7 @@
 
         function scheduleMusic() {
             if (!audioCtx || !musicPlaying) return;
-            const tempo = 0.22; // seconds per beat
+            const tempo = getTempo(); // dynamic tempo based on level
             const now = audioCtx.currentTime;
             let t = now + 0.05;
 
@@ -808,63 +816,71 @@
             holdCtx.fillStyle = '#0d0d1a';
             holdCtx.fillRect(0, 0, w, h);
 
-            // Beat sync: music tempo is 0.22s per beat
-            const beat = (time % 220) / 220; // 0..1 per beat
-            const bounce = Math.sin(beat * Math.PI * 2) * 4;
-            const kick = Math.sin(beat * Math.PI * 2) * 12;
-            const armSwing = Math.sin(beat * Math.PI * 4) * 15;
+            // Beat sync: uses dynamic tempo matching the music
+            const tempo = getTempo();
+            const beat = ((time % (tempo * 1000)) / (tempo * 1000)); // 0..1 per beat
 
+            // Scale: use 80% of canvas in each direction
             const cx = w / 2;
-            const baseY = h - 8;
+            const baseY = h * 0.9;
+
+            // Figure height = 70% of canvas, centered
+            const figHeight = h * 0.7;
+            const headY = baseY - figHeight;
+
+            const bounce = Math.sin(beat * Math.PI * 2) * (h * 0.04);
+            const kick = Math.sin(beat * Math.PI * 2) * (w * 0.12);
+            const armSwing = Math.sin(beat * Math.PI * 4) * (w * 0.15);
 
             holdCtx.strokeStyle = '#ffffff';
             holdCtx.lineWidth = 3;
             holdCtx.lineCap = 'round';
 
-            // Head (with papakha hat)
-            const headY = baseY - 36 + bounce;
+            // Head
+            const rHead = h * 0.08;
             holdCtx.beginPath();
-            holdCtx.arc(cx, headY, 8, 0, Math.PI * 2);
+            holdCtx.arc(cx, headY + bounce, rHead, 0, Math.PI * 2);
             holdCtx.stroke();
-            // Papakha (fur hat) - bigger
+
+            // Papakha (fur hat)
             holdCtx.beginPath();
-            holdCtx.ellipse(cx, headY - 8, 10, 6, 0, 0, Math.PI * 2);
+            holdCtx.ellipse(cx, headY + bounce - rHead * 0.8, rHead * 1.3, rHead * 0.7, 0, 0, Math.PI * 2);
             holdCtx.stroke();
 
             // Body
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, headY + 8);
-            holdCtx.lineTo(cx, baseY - 14 + bounce);
+            holdCtx.moveTo(cx, headY + bounce + rHead);
+            holdCtx.lineTo(cx, baseY - (h * 0.14) + bounce);
             holdCtx.stroke();
 
             // Arms (waving vigorously)
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, headY + 12);
-            holdCtx.lineTo(cx - 14 + armSwing, headY + 6 + bounce);
+            holdCtx.moveTo(cx, headY + bounce + rHead * 2);
+            holdCtx.lineTo(cx - w * 0.2 + armSwing, headY + bounce + rHead);
             holdCtx.stroke();
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, headY + 12);
-            holdCtx.lineTo(cx + 14 - armSwing, headY + 6 + bounce);
+            holdCtx.moveTo(cx, headY + bounce + rHead * 2);
+            holdCtx.lineTo(cx + w * 0.2 - armSwing, headY + bounce + rHead);
             holdCtx.stroke();
 
-            // Legs (kicking high - cosack style!)
+            // Legs (kicking high)
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, baseY - 14 + bounce);
-            holdCtx.lineTo(cx - 8 + kick, baseY);
+            holdCtx.moveTo(cx, baseY - (h * 0.14) + bounce);
+            holdCtx.lineTo(cx - w * 0.1 + kick, baseY);
             holdCtx.stroke();
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, baseY - 14 + bounce);
-            holdCtx.lineTo(cx + 8 - kick, baseY);
+            holdCtx.moveTo(cx, baseY - (h * 0.14) + bounce);
+            holdCtx.lineTo(cx + w * 0.1 - kick, baseY);
             holdCtx.stroke();
 
-            // Shirtka (traditional shirt) - colored body, bigger
-            holdCtx.fillStyle = '#cc3333';
-            holdCtx.fillRect(cx - 6, headY + 8, 12, 16);
+            // Shirtka (light red traditional shirt)
+            holdCtx.fillStyle = '#ff6666';
+            holdCtx.fillRect(cx - (w * 0.06), headY + bounce + rHead * 1.5, w * 0.12, h * 0.16);
 
-            // Boots
-            holdCtx.fillStyle = '#222';
-            holdCtx.fillRect(cx - 10 + kick * 0.5, baseY - 4, 6, 4);
-            holdCtx.fillRect(cx + 4 - kick * 0.5, baseY - 4, 6, 4);
+            // Boots (light gray)
+            holdCtx.fillStyle = '#cccccc';
+            holdCtx.fillRect(cx - w * 0.12 + kick * 0.4, baseY - (h * 0.04), w * 0.06, h * 0.04);
+            holdCtx.fillRect(cx + w * 0.06 - kick * 0.4, baseY - (h * 0.04), w * 0.06, h * 0.04);
         }
 
         function render() {
