@@ -382,8 +382,8 @@
 
         const holdCanvas = document.getElementById('hold-canvas');
         const holdCtx = holdCanvas.getContext('2d');
-        holdCanvas.width = 100;
-        holdCanvas.height = 80;
+        holdCanvas.width = 120;
+        holdCanvas.height = 100;
 
         // === GAME STATE ===
         let board = [];
@@ -810,56 +810,61 @@
 
             // Beat sync: music tempo is 0.22s per beat
             const beat = (time % 220) / 220; // 0..1 per beat
-            const bounce = Math.sin(beat * Math.PI * 2) * 3;
-            const kick = Math.sin(beat * Math.PI * 2) * 8;
+            const bounce = Math.sin(beat * Math.PI * 2) * 4;
+            const kick = Math.sin(beat * Math.PI * 2) * 12;
+            const armSwing = Math.sin(beat * Math.PI * 4) * 15;
 
             const cx = w / 2;
-            const baseY = h - 10;
+            const baseY = h - 8;
 
-            holdCtx.strokeStyle = '#e8e8e8';
-            holdCtx.lineWidth = 2;
+            holdCtx.strokeStyle = '#ffffff';
+            holdCtx.lineWidth = 3;
             holdCtx.lineCap = 'round';
 
             // Head (with papakha hat)
-            const headY = baseY - 30 + bounce;
+            const headY = baseY - 36 + bounce;
             holdCtx.beginPath();
-            holdCtx.arc(cx, headY, 6, 0, Math.PI * 2);
+            holdCtx.arc(cx, headY, 8, 0, Math.PI * 2);
             holdCtx.stroke();
-            // Papakha (fur hat)
+            // Papakha (fur hat) - bigger
             holdCtx.beginPath();
-            holdCtx.ellipse(cx, headY - 6, 7, 4, 0, 0, Math.PI * 2);
+            holdCtx.ellipse(cx, headY - 8, 10, 6, 0, 0, Math.PI * 2);
             holdCtx.stroke();
 
             // Body
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, headY + 6);
-            holdCtx.lineTo(cx, baseY - 12 + bounce);
+            holdCtx.moveTo(cx, headY + 8);
+            holdCtx.lineTo(cx, baseY - 14 + bounce);
             holdCtx.stroke();
 
-            // Arms (waving)
-            const armSwing = Math.sin(beat * Math.PI * 4) * 12; // radians
+            // Arms (waving vigorously)
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, headY + 10);
-            holdCtx.lineTo(cx - 10 + armSwing, headY + 5 + bounce);
+            holdCtx.moveTo(cx, headY + 12);
+            holdCtx.lineTo(cx - 14 + armSwing, headY + 6 + bounce);
             holdCtx.stroke();
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, headY + 10);
-            holdCtx.lineTo(cx + 10 - armSwing, headY + 5 + bounce);
-            holdCtx.stroke();
-
-            // Legs (kicking)
-            holdCtx.beginPath();
-            holdCtx.moveTo(cx, baseY - 12 + bounce);
-            holdCtx.lineTo(cx - 6 + kick, baseY);
-            holdCtx.stroke();
-            holdCtx.beginPath();
-            holdCtx.moveTo(cx, baseY - 12 + bounce);
-            holdCtx.lineTo(cx + 6 - kick, baseY);
+            holdCtx.moveTo(cx, headY + 12);
+            holdCtx.lineTo(cx + 14 - armSwing, headY + 6 + bounce);
             holdCtx.stroke();
 
-            // Shirtka (traditional shirt) - colored body
+            // Legs (kicking high - cosack style!)
+            holdCtx.beginPath();
+            holdCtx.moveTo(cx, baseY - 14 + bounce);
+            holdCtx.lineTo(cx - 8 + kick, baseY);
+            holdCtx.stroke();
+            holdCtx.beginPath();
+            holdCtx.moveTo(cx, baseY - 14 + bounce);
+            holdCtx.lineTo(cx + 8 - kick, baseY);
+            holdCtx.stroke();
+
+            // Shirtka (traditional shirt) - colored body, bigger
             holdCtx.fillStyle = '#cc3333';
-            holdCtx.fillRect(cx - 4, headY + 6, 8, 14);
+            holdCtx.fillRect(cx - 6, headY + 8, 12, 16);
+
+            // Boots
+            holdCtx.fillStyle = '#222';
+            holdCtx.fillRect(cx - 10 + kick * 0.5, baseY - 4, 6, 4);
+            holdCtx.fillRect(cx + 4 - kick * 0.5, baseY - 4, 6, 4);
         }
 
         function render() {
@@ -1036,7 +1041,7 @@
 
         // === TOUCH ZONES ON CANVAS ===
         var hardDropTimer = null;
-        var HARD_DROP_DELAY = 1500; // ms
+        var HARD_DROP_DELAY = 1000; // ms
 
         canvas.addEventListener('pointerdown', (e) => {
             e.preventDefault();
