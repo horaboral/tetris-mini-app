@@ -890,7 +890,7 @@
             holdCtx.fillRect(cx + 5 - kick * 0.4, baseY - 4, 7, 5);
         }
 
-        function render() {
+        function render(time) {
             // Clear
             ctx.fillStyle = '#0d0d1a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -954,7 +954,7 @@
             }
 
             // Dancing cosack on hold canvas
-            drawCosack(time);
+            drawCosack(time || 0);
         }
 
         // === GAME LOOP ===
@@ -962,7 +962,7 @@
             animFrame = requestAnimationFrame(gameLoop);
 
             // Always render (cosack, board state, overlays)
-            render();
+            render(time);
 
             if (gameState !== 'playing') return;
 
@@ -1066,7 +1066,8 @@
 
         // === TOUCH ZONES ON CANVAS ===
         var hardDropTimer = null;
-        var HARD_DROP_DELAY = 1000; // ms
+        var hardDropStartY = null;
+        var HARD_DROP_DELAY = 800; // ms
 
         canvas.addEventListener('pointerdown', (e) => {
             e.preventDefault();
@@ -1076,6 +1077,7 @@
             var x = (e.clientX - rect.left) / rect.width;
             if (y < 0.5) {
                 rotate(1);
+                if (hardDropTimer) { clearTimeout(hardDropTimer); hardDropTimer = null; }
             } else {
                 if (x < 0.19) {
                     moveDx(-1);
@@ -1084,19 +1086,33 @@
                 } else if (x >= 0.44 && x <= 0.56) {
                     softDrop();
                 }
-                // Long press on bottom half → hard drop
+                // Long press on bottom half → hard drop (only if finger stays still)
                 if (hardDropTimer) clearTimeout(hardDropTimer);
+                hardDropStartY = e.clientY;
                 hardDropTimer = setTimeout(function() {
                     hardDrop();
                     hardDropTimer = null;
+                    hardDropStartY = null;
                 }, HARD_DROP_DELAY);
+            }
+        });
+        canvas.addEventListener('pointermove', (e) => {
+            // Cancel hard drop if finger moved (swiping)
+            if (hardDropTimer && hardDropStartY !== null) {
+                if (Math.abs(e.clientY - hardDropStartY) > 20) {
+                    clearTimeout(hardDropTimer);
+                    hardDropTimer = null;
+                    hardDropStartY = null;
+                }
             }
         });
         canvas.addEventListener('pointerup', () => {
             if (hardDropTimer) { clearTimeout(hardDropTimer); hardDropTimer = null; }
+            hardDropStartY = null;
         });
         canvas.addEventListener('pointerleave', () => {
             if (hardDropTimer) { clearTimeout(hardDropTimer); hardDropTimer = null; }
+            hardDropStartY = null;
         });
 
         // === HI-SCORES (localStorage) ===
