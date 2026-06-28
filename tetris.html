@@ -816,81 +816,78 @@
 
         // === DANCING COSACK ===
         function drawCosack(time) {
-            const t = time || 0; // guard against initial render with undefined
+            const t = time || 0;
             const w = holdCanvas.width;
             const h = holdCanvas.height;
 
             // Dark background
-            holdCtx.fillStyle = '#0d0d1a';
+            holdCtx.fillStyle = '#0a0a18';
             holdCtx.fillRect(0, 0, w, h);
 
-            // Beat sync: uses dynamic tempo matching the music
+            // Beat sync: dynamic tempo matching the music
             const tempo = getTempo();
-            const beat = ((t % (tempo * 1000)) / (tempo * 1000)); // 0..1 per beat
+            const beat = ((t % (tempo * 1000)) / (tempo * 1000));
 
             const cx = w / 2;
-            const baseY = h * 0.92;
+            const baseY = h * 0.9;
 
-            // Figure height = 75% of canvas, centered
-            const figHeight = h * 0.75;
-            const headY = baseY - figHeight;
+            const bounce = Math.sin(beat * Math.PI * 2) * 4;
+            const kick = Math.sin(beat * Math.PI * 2) * 14;
+            const armSwing = Math.sin(beat * Math.PI * 4) * 18;
 
-            const bounce = Math.sin(beat * Math.PI * 2) * (h * 0.04);
-            const kick = Math.sin(beat * Math.PI * 2) * (w * 0.13);
-            const armSwing = Math.sin(beat * Math.PI * 4) * (w * 0.16);
-
-            // Light warm stroke color — visible on dark bg
-            holdCtx.strokeStyle = '#f5e6c8';
+            // Bright white stroke — maximum visibility on dark bg
+            holdCtx.strokeStyle = '#ffffff';
             holdCtx.lineWidth = 3;
             holdCtx.lineCap = 'round';
 
             // Head
-            const rHead = h * 0.09;
+            const headY = baseY - 44 + bounce;
+            const rHead = 7;
             holdCtx.beginPath();
-            holdCtx.arc(cx, headY + bounce, rHead, 0, Math.PI * 2);
+            holdCtx.arc(cx, headY, rHead, 0, Math.PI * 2);
             holdCtx.stroke();
 
-            // Papakha (fur hat) — filled light tan
-            holdCtx.fillStyle = '#e8d5b0';
+            // Papakha (fur hat) — filled tan
+            holdCtx.fillStyle = '#d4a574';
             holdCtx.beginPath();
-            holdCtx.ellipse(cx, headY + bounce - rHead * 0.7, rHead * 1.4, rHead * 0.75, 0, 0, Math.PI * 2);
+            holdCtx.ellipse(cx, headY - rHead * 0.6, rHead * 1.5, rHead * 0.8, 0, 0, Math.PI * 2);
             holdCtx.fill();
             holdCtx.stroke();
 
-            // Body line
+            // Body
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, headY + bounce + rHead);
-            holdCtx.lineTo(cx, baseY - (h * 0.14) + bounce);
+            holdCtx.moveTo(cx, headY + rHead);
+            holdCtx.lineTo(cx, baseY - 14 + bounce);
             holdCtx.stroke();
 
             // Arms (waving vigorously)
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, headY + bounce + rHead * 2);
-            holdCtx.lineTo(cx - w * 0.22 + armSwing, headY + bounce + rHead * 0.8);
+            holdCtx.moveTo(cx, headY + rHead * 2);
+            holdCtx.lineTo(cx - 18 + armSwing, headY + 2 + bounce);
             holdCtx.stroke();
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, headY + bounce + rHead * 2);
-            holdCtx.lineTo(cx + w * 0.22 - armSwing, headY + bounce + rHead * 0.8);
+            holdCtx.moveTo(cx, headY + rHead * 2);
+            holdCtx.lineTo(cx + 18 - armSwing, headY + 2 + bounce);
             holdCtx.stroke();
 
-            // Legs (kicking high)
+            // Legs (kicking high — cosack style!)
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, baseY - (h * 0.14) + bounce);
-            holdCtx.lineTo(cx - w * 0.12 + kick, baseY);
+            holdCtx.moveTo(cx, baseY - 14 + bounce);
+            holdCtx.lineTo(cx - 10 + kick, baseY);
             holdCtx.stroke();
             holdCtx.beginPath();
-            holdCtx.moveTo(cx, baseY - (h * 0.14) + bounce);
-            holdCtx.lineTo(cx + w * 0.12 - kick, baseY);
+            holdCtx.moveTo(cx, baseY - 14 + bounce);
+            holdCtx.lineTo(cx + 10 - kick, baseY);
             holdCtx.stroke();
 
-            // Shirtka (light cream traditional shirt — filled)
-            holdCtx.fillStyle = '#f5e6c8';
-            holdCtx.fillRect(cx - (w * 0.07), headY + bounce + rHead * 1.4, w * 0.14, h * 0.18);
+            // Shirtka (red traditional shirt — filled)
+            holdCtx.fillStyle = '#cc2222';
+            holdCtx.fillRect(cx - 7, headY + rHead * 1.3, 14, 18);
 
-            // Boots (light tan — filled)
-            holdCtx.fillStyle = '#e8d5b0';
-            holdCtx.fillRect(cx - w * 0.13 + kick * 0.4, baseY - (h * 0.04), w * 0.07, h * 0.04);
-            holdCtx.fillRect(cx + w * 0.06 - kick * 0.4, baseY - (h * 0.04), w * 0.07, h * 0.04);
+            // Boots (dark — filled)
+            holdCtx.fillStyle = '#333';
+            holdCtx.fillRect(cx - 12 + kick * 0.4, baseY - 4, 7, 5);
+            holdCtx.fillRect(cx + 5 - kick * 0.4, baseY - 4, 7, 5);
         }
 
         function render() {
