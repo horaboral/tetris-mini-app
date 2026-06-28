@@ -824,9 +824,10 @@
             holdCtx.fillStyle = '#0a0a18';
             holdCtx.fillRect(0, 0, w, h);
 
-            // Beat sync: dynamic tempo matching the music
+            // Beat sync: 1/8 of music tempo — relaxed, groovy dance
             const tempo = getTempo();
-            const beat = ((t % (tempo * 1000)) / (tempo * 1000));
+            const danceBeat = tempo * 8;
+            const beat = ((t % (danceBeat * 1000)) / (danceBeat * 1000));
 
             const cx = w / 2;
             const baseY = h * 0.9;
